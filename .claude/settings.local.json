@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"c:\\\\Users\\\\USUARIO\\\\Documents\\\\SOFTWARE\\\\PAW FINDER\\\\backend-node\" /b)",
+      "Bash(node -e ' *)",
+      "WebFetch(domain:www.pcfactory.cl)"
+    ]
+  }
+}

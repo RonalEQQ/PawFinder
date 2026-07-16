@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { margin: 0; padding: 0; overflow-x: hidden; -webkit-font-smoothing: antialiased; background-color: #F2EDE3; }
+img  { max-width: 100%; height: auto; }
+
+/* Leaflet z-index */
+.leaflet-container { z-index: 1 !important; border-radius: 12px; }
+.leaflet-pane      { z-index: 1 !important; }
+.leaflet-top, .leaflet-bottom { z-index: 2 !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D9C4A0; border-radius: 10px; }
+
+/* Touch tap */
+button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
+
+/* ══════════════════════════════════════════
+   TABLET ≤ 1024px
+   ══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .lg\:grid-cols-2 { grid-template-columns: 1fr !important; }
+}
+
+/* ══════════════════════════════════════════
+   MÓVIL ≤ 768px
+   ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Padding inferior para bottom nav */
+  body { padding-bottom: 62px; }
+
+  /* Mapa layout: sidebar arriba del mapa */
+  .mapa-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Campanas: tabs + buscador en columna */
+  .campanas-topbar {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .campanas-search {
+    width: 100% !important;
+    flex: none !important;
+  }
+  .campanas-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Adopciones: 4 cols → 2 cols */
+  .adopciones-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Veterinarias */
+  .vet-layout {
+    flex-direction: column !important;
+  }
+
+  /* Modales */
+  .modal-box {
+    padding: 20px 16px !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+}
+
+/* ══════════════════════════════════════════
+   MÓVIL PEQUEÑO ≤ 480px
+   ══════════════════════════════════════════ */
+@media (max-width: 480px) {
+  /* Adopciones: 2 cols → 1 col */
+  .adopciones-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* Evitar zoom en iOS al enfocar inputs */
+  input, select, textarea { font-size: 16px !important; }
+}

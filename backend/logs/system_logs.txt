@@ -1,0 +1,98 @@
+[2026-05-20 14:45:35] SISTEMA -> Se ingresó al inicio del backend
+[2026-05-20 14:45:53] LOGIN -> Usuario inició sesión
+[2026-05-20 14:52:32] LOGIN -> Usuario inició sesión
+[2026-05-20 14:52:47] REPORTE -> Se creó un reporte de mascota perdida
+[2026-05-20 15:36:09] GOOGLE_LOGIN - Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-05-20 23:09:11] GOOGLE_LOGIN - Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-05-21T13:08:02.185Z] GOOGLE_LOGIN: Ingreso con Google: 73515280@est.unap.edu.pe
+[2026-05-21T13:08:25.304Z] GOOGLE_LOGIN: Ingreso con Google: 73515280@est.unap.edu.pe
+[2026-05-21T13:14:25.501Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-05-21T13:19:19.941Z] REGISTRO: Usuario registrado: ronquispe@gmail.com
+[2026-05-21T13:22:50.717Z] FACEBOOK_LOGIN: Ingreso con Facebook: null
+[2026-05-21T13:28:57.971Z] REGISTRO: Usuario registrado: ronquispe@est.unap.edu.pe
+[2026-05-21T13:29:33.908Z] LOGIN: Usuario inició sesión: ronquispe@est.unap.edu.pe
+[2026-05-21T13:43:24.861Z] GOOGLE_LOGIN: Ingreso con Google: 73515280@est.unap.edu.pe
+[2026-05-21T13:45:24.134Z] GOOGLE_LOGIN: Ingreso con Google: 73515280@est.unap.edu.pe
+[2026-05-21T13:48:17.037Z] GOOGLE_LOGIN: Ingreso con Google: 73515280@est.unap.edu.pe
+[2026-05-21T13:50:30.368Z] GOOGLE_LOGIN: Ingreso con Google: 73515280@est.unap.edu.pe
+[2026-05-21T13:53:54.292Z] GOOGLE_LOGIN: Ingreso con Google: 73515280@est.unap.edu.pe
+[2026-05-21T16:09:33.821Z] REGISTRO: Usuario registrado: j14853065@gmail.com
+[2026-05-21T16:44:32.749Z] LOGIN: Usuario inició sesión: j14853065@gmail.com
+[2026-05-21T16:47:14.663Z] LOGIN: Usuario inició sesión: j14853065@gmail.com
+[2026-05-21T16:53:49.995Z] LOGIN: Usuario inició sesión: j14853065@gmail.com
+[2026-05-23T22:07:22.035Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-24T01:14:51.938Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T00:05:55.790Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T13:18:50.855Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T13:23:24.938Z] RECOVERY_PASSWORD: Recuperación solicitada: nirkpaco1@gmail.com
+[2026-05-29T15:17:29.339Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T15:30:10.989Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T17:03:30.872Z] REGISTRO: Usuario registrado: antoniozapana@gmail.com
+[2026-05-29T17:05:34.007Z] REGISTRO: Usuario registrado: antoniozapana7@gmail.com
+[2026-05-29T17:06:02.282Z] REGISTRO_VERIFICADO: Correo verificado: antoniozapana7@gmail.com
+[2026-05-29T17:06:33.192Z] LOGIN: Usuario inició sesión: antoniozapana7@gmail.com
+[2026-05-29T17:24:22.984Z] REGISTRO: Usuario registrado: antoniozapana7@gmail.com
+[2026-05-29T17:25:03.340Z] REGISTRO_VERIFICADO: Correo verificado: antoniozapana7@gmail.com
+[2026-05-29T17:42:21.873Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T17:58:50.371Z] REGISTRO: Usuario registrado: antoniozapana7@gmail.com
+[2026-05-29T17:59:19.990Z] REGISTRO_VERIFICADO: Correo verificado: antoniozapana7@gmail.com
+[2026-05-29T17:59:51.989Z] LOGIN: Usuario inició sesión: antoniozapana7@gmail.com
+[2026-05-29T18:00:12.853Z] LOGIN: Usuario inició sesión: antoniozapana7@gmail.com
+[2026-05-29T18:12:54.050Z] REGISTRO: Usuario registrado: sgsga@gmail.com
+[2026-05-29T18:14:03.888Z] REGISTRO: Usuario registrado: dsgaga@gmail.com
+[2026-05-29T21:25:35.727Z] REGISTRO: Usuario registrado: antoniozapana7@gmail.com
+[2026-05-29T21:26:15.228Z] REGISTRO_VERIFICADO: Correo verificado: antoniozapana7@gmail.com
+[2026-05-29T21:27:01.779Z] LOGIN: Usuario inició sesión: antoniozapana7@gmail.com
+[2026-05-29T21:39:30.071Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T21:40:46.140Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T21:44:03.747Z] REGISTRO: Usuario registrado: antoniozapana7@gmail.com
+[2026-05-29T21:44:35.718Z] REGISTRO_VERIFICADO: Correo verificado: antoniozapana7@gmail.com
+[2026-05-29T21:47:02.624Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T22:12:24.374Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T22:15:54.379Z] LOGIN: Usuario inició sesión: antoniozapana7@gmail.com
+[2026-05-29T22:16:28.384Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T23:12:06.964Z] LOGIN: Usuario inició sesión: antoniozapana7@gmail.com
+[2026-05-29T23:13:18.628Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T23:14:49.992Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T23:27:05.310Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T23:56:56.043Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-29T23:57:25.898Z] LOGIN: Usuario inició sesión: antoniozapana7@gmail.com
+[2026-05-30T00:53:01.824Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-30T01:43:10.839Z] LOGIN: Usuario inició sesión: pamelamanasaya@gmail.com
+[2026-05-30T03:53:27.919Z] LOGIN: Usuario inició sesión: pamelamanasaya@gmail.com
+[2026-05-30T04:07:57.531Z] LOGIN: Usuario inició sesión: pamelamanasaya@gmail.com
+[2026-05-30T04:21:51.522Z] LOGIN: Usuario inició sesión: pamelamanasaya@gmail.com
+[2026-05-30T04:24:08.584Z] RECOVERY_PASSWORD: Recuperación solicitada: manasayaquispe@gmail.com
+[2026-05-30T04:25:22.886Z] LOGIN: Usuario inició sesión: manasayaquispe@gmail.com
+[2026-05-30T04:36:22.057Z] LOGIN: Usuario inició sesión: pamelamanasaya@gmail.com
+[2026-05-30T04:46:47.136Z] LOGIN: Usuario inició sesión: manasayaquispe@gmail.com
+[2026-05-30T14:40:15.445Z] LOGIN: Usuario inició sesión: pamelamanasaya@gmail.com
+[2026-05-30T20:48:18.776Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-31T02:07:45.632Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-31T02:14:18.535Z] LOGIN: Usuario inició sesión: antoniozapana7@gmail.com
+[2026-05-31T02:15:47.800Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-31T02:52:00.323Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-31T03:00:10.927Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-31T16:30:34.309Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-05-31T16:46:27.579Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-06-01T12:39:28.398Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-06-01T15:18:22.977Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-06-03T19:47:45.729Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-06-04T14:47:23.679Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-06-04T15:25:46.708Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-06-04T15:36:01.936Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-06-04T15:36:46.667Z] GOOGLE_LOGIN: Ingreso con Google: nirkpaco1@gmail.com
+[2026-06-11T03:54:49.723Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
+[2026-06-11T03:57:37.176Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-06-11T04:09:49.031Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
+[2026-06-11T04:11:12.271Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-06-11T04:14:28.040Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
+[2026-06-11T04:20:42.247Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-06-11T04:22:11.367Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
+[2026-06-11T04:23:26.691Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-06-11T20:03:51.029Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
+[2026-06-11T22:22:50.913Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-06-11T22:28:52.261Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
+[2026-07-15T20:37:09.453Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
+[2026-07-15T20:40:03.222Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-07-16T04:29:02.411Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
