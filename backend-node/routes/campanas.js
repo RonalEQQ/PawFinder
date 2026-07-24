@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { Pool } = require('pg')
 const dotenv = require('dotenv')
+const { enviarEmailCampana } = require('../services/email')
 dotenv.config({ path: require('path').join(__dirname, '..', '.env') })
 
 const pool = new Pool({
@@ -65,12 +66,57 @@ router.post('/', async (req, res) => {
      
       `INSERT INTO campanas 
             (usuario_id, nombre, zona, lugar, lat, lng, fecha_inicio, fecha_fin, hora_inicio, hora_fin, ruc, razon_social, tipo_vacuna, descripcion, imagen)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
             RETURNING *`,
             [usuario_id, nombre, zona, lugar, lat || null, lng || null, fecha_inicio, fecha_fin, hora_inicio || null, hora_fin || null, ruc || null, razon_social || null, tipo_vacuna || null, descripcion, imagen]
 
     )
-    res.status(201).json(resultado.rows[0])
+    const campana = resultado.rows[0]
+
+    // Notificar a todos los usuarios registrados
+    try {
+      const usuarios = await pool.query('SELECT id FROM usuarios WHERE id != $1', [usuario_id || 0])
+      const tipo_texto = campana.tipo_vacuna ? campana.tipo_vacuna : 'Campaña'
+      const zona_texto = campana.zona ? ' en ' + campana.zona : ''
+      const mensaje = '🐾 Nueva campaña: ' + campana.nombre + ' (' + tipo_texto + ')' + zona_texto + '. Del ' + (campana.fecha_inicio ? new Date(campana.fecha_inicio).toLocaleDateString('es-ES') : '') + ' al ' + (campana.fecha_fin ? new Date(campana.fecha_fin).toLocaleDateString('es-ES') : '') + '.'
+
+      for (const u of usuarios.rows) {
+        await pool.query(
+          `INSERT INTO notificaciones (usuario_id, tipo, mensaje, similitud_pct) VALUES ($1, 'campana', $2, 0)`,
+          [u.id, mensaje]
+        )
+      }
+      console.log('✅ Notificaciones de campaña enviadas a ' + usuarios.rows.length + ' usuarios')
+
+      // Enviar email a cada usuario
+      const usuariosConEmail = await pool.query(
+        'SELECT u.id, u.nombre, u.email FROM usuarios u WHERE u.id != $1 AND u.email IS NOT NULL',
+        [usuario_id || 0]
+      )
+      let emailsEnviados = 0
+      for (const u of usuariosConEmail.rows) {
+        const enviado = await enviarEmailCampana({
+          emailDestinatario: u.email,
+          nombreUsuario: u.nombre,
+          nombreCampana: campana.nombre,
+          tipoCampana: campana.tipo_vacuna,
+          zona: campana.zona,
+          lugar: campana.lugar,
+          fechaInicio: campana.fecha_inicio,
+          fechaFin: campana.fecha_fin,
+          horaInicio: campana.hora_inicio,
+          horaFin: campana.hora_fin,
+          descripcion: campana.descripcion,
+          imagen: campana.imagen
+        })
+        if (enviado) emailsEnviados++
+      }
+      console.log(`✅ Emails de campaña enviados: ${emailsEnviados}/${usuariosConEmail.rows.length}`)
+    } catch (notifErr) {
+      console.error('⚠️ Error enviando notificaciones de campaña:', notifErr.message)
+    }
+
+    res.status(201).json(campana)
   } catch (error) {
     console.error('Error creando campaña:', error.message)
     res.status(500).json({ error: 'Error interno del servidor' })

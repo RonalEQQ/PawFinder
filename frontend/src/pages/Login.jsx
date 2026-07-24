@@ -285,6 +285,12 @@ export default function Login() {
 
         if (modo === "registro" && !formData.nombre.trim()) {
             newErrors.nombre = "El nombre es requerido";
+        } else if (modo === "registro" && /[0-9]/.test(formData.nombre)) {
+            newErrors.nombre = "El nombre no puede contener números";
+        } else if (modo === "registro" && formData.nombre.trim().length < 3) {
+            newErrors.nombre = "El nombre debe tener al menos 3 caracteres";
+        } else if (modo === "registro" && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(formData.nombre.trim())) {
+            newErrors.nombre = "El nombre solo puede contener letras";
         }
 
         {
@@ -298,8 +304,14 @@ export default function Login() {
 
         if (!formData.password) {
             newErrors.password = "La contraseña es requerida";
-        } else if (formData.password.length < 6) {
-            newErrors.password = "Mínimo 6 caracteres";
+        } else if (formData.password.length < 8) {
+            newErrors.password = "Mínimo 8 caracteres";
+        } else if (!/[0-9]/.test(formData.password)) {
+            newErrors.password = "Debe contener al menos un número";
+        } else if (!/[a-zA-Z]/.test(formData.password)) {
+            newErrors.password = "Debe contener al menos una letra";
+        } else if (!/[A-Z]/.test(formData.password)) {
+            newErrors.password = "Debe contener al menos una mayúscula";
         }
 
         if (modo === "registro") {
@@ -1016,7 +1028,12 @@ export default function Login() {
                                 <input
                                     name="nombre"
                                     value={formData.nombre}
-                                    onChange={handleChange}
+                                    onChange={(e) => {
+                                        // No permitir números en tiempo real
+                                        const val = e.target.value;
+                                        if (/[0-9]/.test(val)) return;
+                                        handleChange(e);
+                                    }}
                                     placeholder="Tu nombre completo"
                                     className={`w-full text-sm rounded-xl p-3 transition-all duration-300 focus:scale-[1.02] focus:shadow-lg ${errors.nombre ? 'border-red-500' : ''
                                         }`}
@@ -1030,6 +1047,21 @@ export default function Login() {
                                 />
                                 {errors.nombre && (
                                     <p className="text-xs text-red-500 mt-1 ml-2 animate-shake">{errors.nombre}</p>
+                                )}
+                                {modo === "registro" && formData.nombre.length > 0 && (
+                                    <div className="mt-2 p-2 rounded-lg" style={{ backgroundColor: "rgba(0,122,123,0.06)", border: "1px solid rgba(0,122,123,0.15)" }}>
+                                        <div className="space-y-0.5">
+                                            <p className="text-xs flex items-center gap-1" style={{ color: formData.nombre.trim().length >= 3 ? "#007A7B" : "#cc0000" }}>
+                                                {formData.nombre.trim().length >= 3 ? "✅" : "❌"} Mínimo 3 letras
+                                            </p>
+                                            <p className="text-xs flex items-center gap-1" style={{ color: !/[0-9]/.test(formData.nombre) ? "#007A7B" : "#cc0000" }}>
+                                                {!/[0-9]/.test(formData.nombre) ? "✅" : "❌"} Sin números
+                                            </p>
+                                            <p className="text-xs flex items-center gap-1" style={{ color: /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(formData.nombre.trim()) ? "#007A7B" : "#cc0000" }}>
+                                                {/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(formData.nombre.trim()) ? "✅" : "❌"} Solo letras
+                                            </p>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -1128,6 +1160,52 @@ export default function Login() {
                             </div>
                             {errors.password && (
                                 <p className="text-xs text-red-500 mt-1 ml-2 animate-shake">{errors.password}</p>
+                            )}
+                            {modo === "registro" && formData.password.length > 0 && (
+                                <div className="mt-2 p-2 rounded-lg" style={{ backgroundColor: "rgba(0,122,123,0.06)", border: "1px solid rgba(0,122,123,0.15)" }}>
+                                    <p className="text-xs font-bold mb-1" style={{ color: "#003F5A" }}>Requisitos de contraseña:</p>
+                                    <div className="space-y-0.5">
+                                        <p className="text-xs flex items-center gap-1" style={{ color: formData.password.length >= 8 ? "#007A7B" : "#cc0000" }}>
+                                            {formData.password.length >= 8 ? "✅" : "❌"} Mínimo 8 caracteres
+                                        </p>
+                                        <p className="text-xs flex items-center gap-1" style={{ color: /[a-zA-Z]/.test(formData.password) ? "#007A7B" : "#cc0000" }}>
+                                            {/[a-zA-Z]/.test(formData.password) ? "✅" : "❌"} Al menos una letra
+                                        </p>
+                                        <p className="text-xs flex items-center gap-1" style={{ color: /[0-9]/.test(formData.password) ? "#007A7B" : "#cc0000" }}>
+                                            {/[0-9]/.test(formData.password) ? "✅" : "❌"} Al menos un número
+                                        </p>
+                                        <p className="text-xs flex items-center gap-1" style={{ color: /[A-Z]/.test(formData.password) ? "#007A7B" : "#aaa" }}>
+                                            {/[A-Z]/.test(formData.password) ? "✅" : "⬜"} Contiene mayúscula
+                                        </p>
+                                        <p className="text-xs flex items-center gap-1" style={{ color: /[^a-zA-Z0-9]/.test(formData.password) ? "#007A7B" : "#aaa" }}>
+                                            {/[^a-zA-Z0-9]/.test(formData.password) ? "✅" : "⬜"} Símbolo especial (opcional)
+                                        </p>
+                                    </div>
+                                    {(() => {
+                                        const p = formData.password
+                                        let score = 0
+                                        if (p.length >= 8) score++
+                                        if (p.length >= 12) score++
+                                        if (/[a-zA-Z]/.test(p)) score++
+                                        if (/[A-Z]/.test(p)) score++
+                                        if (/[0-9]/.test(p)) score++
+                                        if (/[^a-zA-Z0-9]/.test(p)) score++
+                                        const labels = ["", "Muy débil", "Débil", "Regular", "Fuerte", "Muy fuerte", "Muy fuerte"]
+                                        const clrs = ["", "#ef4444", "#f97316", "#eab308", "#22c55e", "#007A7B", "#007A7B"]
+                                        return (
+                                            <div className="mt-2">
+                                                <div className="flex gap-1 mb-1">
+                                                    {[1,2,3,4,5].map(i => (
+                                                        <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: i <= score ? clrs[score] : "#e2d3be", transition: "background-color 0.3s" }} />
+                                                    ))}
+                                                </div>
+                                                <p className="text-xs font-semibold" style={{ color: clrs[score] || "#888" }}>
+                                                    {labels[score] || ""}
+                                                </p>
+                                            </div>
+                                        )
+                                    })()}
+                                </div>
                             )}
                         </div>
 
@@ -1335,7 +1413,7 @@ export default function Login() {
                         </div>
                     </div>
 
-                    {/* Botón Google — ancho completo, Facebook oculto */}
+                    {/* Botón Google — ancho completo */}
                     <div>
                         <button
                             type="button"

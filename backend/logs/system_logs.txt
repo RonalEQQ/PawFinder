@@ -97,3 +97,10 @@
 [2026-07-15T20:40:03.222Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeqq123@gmail.com
 [2026-07-16T04:29:02.411Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
 [2026-07-16T05:14:57.248Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
+[2026-07-16T13:18:16.367Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com
+[2026-07-16T14:38:36.771Z] REGISTRO: Usuario registrado: pexige5273@meikeya.com
+[2026-07-16T14:39:05.540Z] REGISTRO_VERIFICADO: Correo verificado: pexige5273@meikeya.com
+[2026-07-16T15:15:56.681Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeqq123@gmail.com
+[2026-07-16T15:18:01.581Z] REGISTRO: Usuario registrado: yafoy34989@luckfeed.com
+[2026-07-16T15:18:45.880Z] REGISTRO_VERIFICADO: Correo verificado: yafoy34989@luckfeed.com
+[2026-07-16T15:19:10.198Z] GOOGLE_LOGIN: Ingreso con Google: ronaldoeddson.quispequispe@gmail.com

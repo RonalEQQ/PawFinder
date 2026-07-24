@@ -71,7 +71,12 @@ export default function Campanas() {
         finally { setCargando(false) }
     }
 
-    useEffect(() => { cargarCampanas() }, [])
+    useEffect(() => {
+        cargarCampanas()
+        // Auto-refresh cada 60 segundos
+        const interval = setInterval(() => { cargarCampanas() }, 60000)
+        return () => clearInterval(interval)
+    }, [])
 
     const verificarRuc = async () => {
         if (!nuevaCampana.ruc || nuevaCampana.ruc.length !== 11) { setErrorRuc('El RUC debe tener 11 dígitos'); return }
@@ -350,61 +355,48 @@ export default function Campanas() {
             style={{ paddingBottom: 80, backgroundImage: "url('/fono.png')", backgroundSize: "contain", backgroundPosition: "center", backgroundAttachment: "fixed", backgroundColor: paleta.fondoGeneral }}>
             <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px]"></div>
         <FondoAnimado />
+        <style>{`
+            .campanas-grid { grid-template-columns: repeat(2, 1fr); }
+            @media (max-width: 768px) {
+                .campanas-grid { grid-template-columns: 1fr !important; }
+                .campanas-tabs { flex-direction: row !important; }
+                .campanas-tabs button { flex: 1 !important; font-size: 12px !important; padding: 10px 8px !important; }
+                .campanas-buscador { width: 100% !important; }
+                .campanas-archivadas { width: 100% !important; }
+                .campanas-archivadas button { width: 100% !important; }
+            }
+        `}</style>
 
-            <div className="relative z-10 max-w-5xl mx-auto p-5 flex flex-col" style={{ minHeight: '100vh' }}>
+            <div className="relative z-10 max-w-5xl mx-auto p-5 flex flex-col" style={{ minHeight: '100vh', paddingBottom: 90 }}>
             
-                {/* Pestañas */}
-                <div className="campanas-topbar flex gap-3 mb-5">
-                    <button onClick={() => setPestana('campanas')}
-                        className="px-6 py-2.5 rounded-xl font-black text-sm transition-all"
-                        style={{ backgroundColor: pestana === 'campanas' ? paleta.primario : paleta.tarjetaBlanca, color: pestana === 'campanas' ? 'white' : paleta.textoPrincipal, border: '2px solid ' + paleta.primario }}>
-                        🐾 Campañas
-                    </button>
-                    <button onClick={() => setPestana('mis')}
-                        className="px-6 py-2.5 rounded-xl font-black text-sm transition-all"
-                        style={{ backgroundColor: pestana === 'mis' ? paleta.primario : paleta.tarjetaBlanca, color: pestana === 'mis' ? 'white' : paleta.textoPrincipal, border: '2px solid ' + paleta.primario }}>
-                        📋 Mis campañas {usuarioDb && '(' + misCampanas.length + ')'}
-                    </button>
-
-                    {/* Buscador */}
-                    <input type="text" placeholder="Buscar..."
+                {/* Pestañas — layout 2 filas en móvil */}
+                <div className="flex flex-col gap-3 mb-5">
+                    {/* Fila 1: pestañas */}
+                    <div className="campanas-tabs flex gap-2">
+                        <button onClick={() => setPestana('campanas')}
+                            className="px-6 py-2.5 rounded-xl font-black text-sm transition-all"
+                            style={{ backgroundColor: pestana === 'campanas' ? paleta.primario : paleta.tarjetaBlanca, color: pestana === 'campanas' ? 'white' : paleta.textoPrincipal, border: '2px solid ' + paleta.primario }}>
+                            🐾 Campañas
+                        </button>
+                        <button onClick={() => setPestana('mis')}
+                            className="px-6 py-2.5 rounded-xl font-black text-sm transition-all"
+                            style={{ backgroundColor: pestana === 'mis' ? paleta.primario : paleta.tarjetaBlanca, color: pestana === 'mis' ? 'white' : paleta.textoPrincipal, border: '2px solid ' + paleta.primario }}>
+                            📋 Mis campañas {usuarioDb && '(' + misCampanas.length + ')'}
+                        </button>
+                    </div>
+                    {/* Fila 2: buscador ancho completo */}
+                    <input type="text" placeholder="🔍 Buscar campaña..."
                         value={filtroTexto} onChange={(e) => setFiltroTexto(e.target.value)}
-                        className="flex-1 p-2.5 rounded-xl border bg-white text-sm focus:outline-none"
+                        className="w-full p-2.5 rounded-xl border bg-white text-sm focus:outline-none"
                         style={{ borderColor: paleta.borde }} />
 
-                    {/* Archivadas solo en pestaña campañas */}
+                    {/* Fila 3: archivadas ancho completo (solo en pestaña campañas) */}
                     {pestana === 'campanas' && (
-
-                        <div style={{ position: 'relative' }} className="group">
-                            <button onClick={() => setMostrarArchivadas(!mostrarArchivadas)}
-                                className="px-4 rounded-xl text-sm font-black"
-                                style={{ backgroundColor: mostrarArchivadas ? paleta.primario : paleta.fondoGeneral, color: mostrarArchivadas ? 'white' : paleta.textoPrincipal, height: '100%', minHeight: 42 }}>
-                                {mostrarArchivadas ? '📂 Activas' : '📁 Archivadas'}
-                            </button>
-                            {!mostrarArchivadas && (
-                                <div className="group-hover:block hidden" style={{
-                                    position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                                    background: '#003F5A', color: 'white', borderRadius: 10,
-                                    padding: '8px 12px', fontSize: 12, fontWeight: 600,
-                                    maxWidth: 200, lineHeight: 1.5, zIndex: 999,
-                                    boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-                                    whiteSpace: 'normal'
-                                }}>
-                                    Aquí encontrarás campañas pasadas que ya finalizaron
-                                    <div style={{
-                                        position: 'absolute', top: -6, right: 16,
-                                        width: 0, height: 0,
-                                        borderLeft: '6px solid transparent',
-                                        borderRight: '6px solid transparent',
-                                        borderBottom: '6px solid #003F5A'
-                                    }}/>
-                                </div>
-                            )}
-                        </div>
-
-
-
-
+                        <button onClick={() => setMostrarArchivadas(!mostrarArchivadas)}
+                            className="w-full py-2.5 rounded-xl text-sm font-black"
+                            style={{ backgroundColor: mostrarArchivadas ? paleta.primario : paleta.fondoGeneral, color: mostrarArchivadas ? 'white' : paleta.textoPrincipal, border: '2px solid ' + (mostrarArchivadas ? paleta.primario : paleta.borde) }}>
+                            {mostrarArchivadas ? '📂 Ver Activas' : '📁 Ver Archivadas'}
+                        </button>
                     )}
                 </div>
 
@@ -511,7 +503,7 @@ export default function Campanas() {
                 <div className="fixed inset-0 flex items-center justify-center z-50 p-4"
                     style={{ backgroundColor: "rgba(14,62,70,0.6)", backdropFilter: "blur(4px)" }}
                     onClick={(e) => e.target === e.currentTarget && cerrarModal()}>
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 overflow-y-auto"
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 overflow-y-auto" style={{ maxHeight: "90vh" }}
                         style={{ border: "1.5px solid " + paleta.borde, maxHeight: "90vh" }}>
                         <h3 className="font-black text-lg mb-4" style={{ color: paleta.primario }}>Nueva Campaña</h3>
 

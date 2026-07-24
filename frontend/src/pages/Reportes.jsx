@@ -272,6 +272,29 @@ const GLOBAL_CSS = `
     .pf-map-picker .leaflet-dragging .leaflet-container {
         cursor: grabbing !important;
     }
+
+    /* ── RESPONSIVE MÓVIL ── */
+    @media (max-width: 768px) {
+        /* Formulario de reporte */
+        .pf-modal-box { padding: 16px !important; margin: 8px !important; border-radius: 16px !important; }
+        .pf-form-grid-2 { grid-template-columns: 1fr !important; }
+        .pf-form-grid-3 { grid-template-columns: 1fr 1fr !important; }
+
+        /* Lista de reportes */
+        .pf-reporte-card { flex-direction: column !important; }
+        .pf-reporte-fotos { flex-wrap: wrap !important; }
+
+        /* Tabs */
+        .pf-tabs { overflow-x: auto !important; white-space: nowrap !important; }
+
+        /* Botones flotantes */
+        .pf-fab { bottom: 76px !important; right: 16px !important; }
+    }
+    @media (max-width: 480px) {
+        .pf-form-grid-3 { grid-template-columns: 1fr !important; }
+        .pf-section-title { font-size: 18px !important; }
+        .pf-detector-btns { flex-direction: column !important; }
+    }
 `
 
 // ── FIX ÍCONOS LEAFLET ─────────────────────────────────────────
@@ -905,6 +928,258 @@ function tmTraducir(clave) {
     return TM_RAZAS[clave] || clave.replace(/_/g, " ")
 }
 
+// ── MobileNet: mapeo de clases a razas en español ───────────────────────
+const MOBILENET_RAZAS = {
+    "Chihuahua": "Chihuahua", "Japanese_spaniel": "Spaniel japonés",
+    "Maltese_dog": "Maltés", "Pekinese": "Pekinés", "Shih-Tzu": "Shih Tzu",
+    "Blenheim_spaniel": "Spaniel Blenheim", "papillon": "Papillón",
+    "toy_terrier": "Toy Terrier", "Rhodesian_ridgeback": "Rhodesian Ridgeback",
+    "Afghan_hound": "Lebrel afgano", "basset": "Basset Hound",
+    "beagle": "Beagle", "bloodhound": "Sabueso", "bluetick": "Bluetick Coonhound",
+    "black-and-tan_coonhound": "Coonhound negro y canela",
+    "Walker_hound": "Walker Hound", "English_foxhound": "Foxhound inglés",
+    "redbone": "Redbone Coonhound", "borzoi": "Borzoi", "Irish_wolfhound": "Lobero irlandés",
+    "Italian_greyhound": "Galgo italiano", "whippet": "Whippet",
+    "Ibizan_hound": "Podenco ibicenco", "Norwegian_elkhound": "Elkhound noruego",
+    "otterhound": "Otterhound", "Saluki": "Saluki",
+    "Scottish_deerhound": "Deerhound escocés", "Weimaraner": "Weimaraner",
+    "Staffordshire_bullterrier": "Bull Terrier Staffordshire",
+    "American_Staffordshire_terrier": "American Staffordshire Terrier",
+    "Bedlington_terrier": "Bedlington Terrier", "Border_terrier": "Border Terrier",
+    "Kerry_blue_terrier": "Kerry Blue Terrier", "Irish_terrier": "Terrier irlandés",
+    "Norfolk_terrier": "Norfolk Terrier", "Norwich_terrier": "Norwich Terrier",
+    "Yorkshire_terrier": "Yorkshire Terrier", "wire-haired_fox_terrier": "Fox Terrier de pelo duro",
+    "Lakeland_terrier": "Lakeland Terrier", "Sealyham_terrier": "Sealyham Terrier",
+    "Airedale": "Airedale Terrier", "cairn": "Cairn Terrier",
+    "Australian_terrier": "Terrier australiano", "Dandie_Dinmont": "Dandie Dinmont Terrier",
+    "Boston_bull": "Boston Terrier", "miniature_schnauzer": "Schnauzer miniatura",
+    "giant_schnauzer": "Schnauzer gigante", "standard_schnauzer": "Schnauzer estándar",
+    "Scotch_terrier": "Scottish Terrier", "Tibetan_terrier": "Terrier tibetano",
+    "silky_terrier": "Terrier sedoso", "soft-coated_wheaten_terrier": "Wheaten Terrier",
+    "West_Highland_white_terrier": "West Highland Terrier",
+    "Lhasa": "Lhasa Apso", "flat-coated_retriever": "Retriever de pelo liso",
+    "curly-coated_retriever": "Retriever de pelo rizado",
+    "golden_retriever": "Golden Retriever", "Labrador_retriever": "Labrador Retriever",
+    "Chesapeake_Bay_retriever": "Chesapeake Bay Retriever",
+    "German_short-haired_pointer": "Pointer alemán de pelo corto",
+    "vizsla": "Vizsla", "English_setter": "Setter inglés",
+    "Irish_setter": "Setter irlandés", "Gordon_setter": "Setter Gordon",
+    "Brittany_spaniel": "Spaniel bretón", "clumber": "Clumber Spaniel",
+    "English_springer": "Springer inglés", "Welsh_springer_spaniel": "Springer galés",
+    "cocker_spaniel": "Cocker Spaniel", "Sussex_spaniel": "Sussex Spaniel",
+    "Irish_water_spaniel": "Spaniel de agua irlandés", "kuvasz": "Kuvasz",
+    "schipperke": "Schipperke", "groenendael": "Groenendael",
+    "malinois": "Malinois belga", "briard": "Briard",
+    "kelpie": "Australian Kelpie", "komondor": "Komondor",
+    "Old_English_sheepdog": "Bobtail", "Shetland_sheepdog": "Shetland Sheepdog",
+    "collie": "Collie", "Border_collie": "Border Collie",
+    "Bouvier_des_Flandres": "Bouvier des Flandres", "Rottweiler": "Rottweiler",
+    "German_shepherd": "Pastor alemán", "Doberman": "Doberman",
+    "miniature_pinscher": "Pinscher miniatura", "Greater_Swiss_Mountain_dog": "Boyero del Gran San Bernardo",
+    "Bernese_mountain_dog": "Boyero de Berna", "Appenzeller": "Appenzeller",
+    "EntleBucher": "Entlebucher", "boxer": "Boxer",
+    "bull_mastiff": "Bull Mastiff", "Tibetan_mastiff": "Mastín tibetano",
+    "French_bulldog": "Bulldog francés", "Great_Dane": "Gran Danés",
+    "Saint_Bernard": "San Bernardo", "Eskimo_dog": "Perro esquimal",
+    "malamute": "Malamute de Alaska", "Siberian_husky": "Husky siberiano",
+    "affenpinscher": "Affenpinscher", "basenji": "Basenji",
+    "pug": "Pug", "Leonberg": "Leonberger", "Newfoundland": "Terranova",
+    "Great_Pyrenees": "Gran Pirineo", "Samoyed": "Samoyedo",
+    "Pomeranian": "Pomerania", "chow": "Chow Chow",
+    "keeshond": "Keeshond", "Brabancon_griffon": "Grifón de Brabante",
+    "Pembroke": "Corgi Pembroke", "Cardigan": "Corgi Cardigan",
+    "toy_poodle": "Poodle toy", "miniature_poodle": "Poodle miniatura",
+    "standard_poodle": "Poodle estándar", "Mexican_hairless": "Xoloitzcuintle",
+    "dingo": "Dingo", "dhole": "Dhole", "African_hunting_dog": "Licaón"
+}
+
+function mnTraducir(clave) {
+    return MOBILENET_RAZAS[clave] || clave.replace(/_/g, " ")
+}
+
+// Singleton MobileNet
+let _mnModelo = null
+async function cargarMobileNet() {
+    if (_mnModelo) return _mnModelo
+    let intentos = 0
+    while (!window.mobilenet && intentos < 100) {
+        await new Promise(r => setTimeout(r, 100))
+        intentos++
+    }
+    if (!window.mobilenet) throw new Error("MobileNet no disponible")
+    _mnModelo = await window.mobilenet.load({ version: 2, alpha: 1.0 })
+    return _mnModelo
+}
+
+// ── Componente: Detector MobileNet ───────────────────────────────────────
+function DetectorMobileNet({ foto, onRazaDetectada }) {
+    const [estado, setEstado] = useState("idle")
+    const [resultados, setResultados] = useState([])
+    const [msgError, setMsgError] = useState("")
+
+    useEffect(() => { setEstado("idle"); setResultados([]); setMsgError("") }, [foto])
+
+    const analizar = async () => {
+        if (!foto) return
+        setEstado("cargando"); setResultados([]); setMsgError("")
+        try {
+            const modelo = await cargarMobileNet()
+            const img = new Image()
+            img.crossOrigin = "anonymous"
+            await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = foto })
+            const preds = await modelo.classify(img, 5)
+            // Filtrar solo razas de perros (clases que existen en MOBILENET_RAZAS o contienen palabras clave)
+            const perros = preds
+                .filter(p => {
+                    const cls = p.className.split(",")[0].trim()
+                    return MOBILENET_RAZAS[cls] || cls.toLowerCase().includes("dog") || cls.toLowerCase().includes("hound") || cls.toLowerCase().includes("terrier") || cls.toLowerCase().includes("retriever") || cls.toLowerCase().includes("spaniel") || cls.toLowerCase().includes("shepherd") || cls.toLowerCase().includes("bulldog") || cls.toLowerCase().includes("poodle") || cls.toLowerCase().includes("husky") || cls.toLowerCase().includes("collie")
+                })
+                .map(p => {
+                    const cls = p.className.split(",")[0].trim()
+                    return {
+                        key: cls,
+                        nombre: mnTraducir(cls),
+                        pct: Math.round(p.probability * 100)
+                    }
+                })
+                .slice(0, 4)
+
+            if (perros.length === 0) {
+                setMsgError("No se detectó un perro claramente. Intenta con otra foto más nítida.")
+                setEstado("error")
+                return
+            }
+            setResultados(perros)
+            setEstado("listo")
+            if (perros[0].pct >= 20) onRazaDetectada(perros[0].nombre, perros[0].key)
+        } catch (e) {
+            console.error("MobileNet error:", e)
+            setMsgError("No se pudo analizar. Verifica la conexión.")
+            setEstado("error")
+        }
+    }
+
+    const colorBarra = (pct) => pct >= 50 ? "#1565C0" : pct >= 25 ? "#5C6BC0" : "#9e9e9e"
+    const colorTexto = (pct) => pct >= 50 ? "#0d3b7a" : pct >= 25 ? "#303f9f" : "#666"
+
+    if (!foto) return null
+
+    return (
+        <div style={{
+            marginTop: 8,
+            borderRadius: 16,
+            border: `1.5px solid ${estado === "listo" ? "#1565C0" : "#5C6BC0"}`,
+            overflow: "hidden",
+            background: "#fff",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+        }}>
+            <div style={{
+                background: estado === "listo" ? "#e3f2fd" : "#ede7f6",
+                padding: "12px 16px",
+                display: "flex", alignItems: "center",
+                justifyContent: "space-between", gap: 12,
+                borderBottom: estado !== "idle" ? "1px solid #bbdefb" : "none",
+            }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    <div style={{
+                        width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
+                        background: estado === "listo" ? "#1565C0" : "#5C6BC0",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 18,
+                    }}>
+                        {estado === "cargando" ? "⏳" : estado === "listo" ? "🧠" : estado === "error" ? "⚠️" : "🔬"}
+                    </div>
+                    <div>
+                        <div style={{ fontWeight: 800, fontSize: 13, color: estado === "listo" ? "#0d3b7a" : "#311b92" }}>
+                            {estado === "listo" ? "Raza detectada — MobileNet" : estado === "cargando" ? "Analizando con MobileNet..." : "Análisis MobileNet (Google)"}
+                        </div>
+                        <div style={{ fontSize: 11, color: "#6b6b6b", marginTop: 1 }}>
+                            Modelo de Google — 1000+ razas y objetos
+                        </div>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onClick={analizar}
+                    disabled={estado === "cargando"}
+                    style={{
+                        padding: "8px 16px", borderRadius: 20, border: "none",
+                        background: estado === "cargando" ? "#ccc" : estado === "listo" ? "#1565C0" : "#5C6BC0",
+                        color: "white", fontWeight: 800, fontSize: 12,
+                        cursor: estado === "cargando" ? "not-allowed" : "pointer",
+                        whiteSpace: "nowrap", flexShrink: 0, transition: "background .2s",
+                    }}>
+                    {estado === "cargando" ? "Analizando..." : estado === "listo" ? "🔄 Reanálisis" : "🔬 Analizar"}
+                </button>
+            </div>
+
+            {estado === "error" && (
+                <div style={{ padding: "10px 16px", fontSize: 12, color: "#c62828", background: "#fff0f0", fontWeight: 600 }}>
+                    ⚠️ {msgError}
+                </div>
+            )}
+
+            {estado === "listo" && resultados.length > 0 && (
+                <div style={{ padding: "14px 16px" }}>
+                    <div style={{
+                        fontSize: 11, fontWeight: 700, color: "#6b6b6b",
+                        textTransform: "uppercase", letterSpacing: "0.5px",
+                        marginBottom: 12, display: "flex", alignItems: "center", gap: 6,
+                    }}>
+                        <span style={{ width: 3, height: 14, background: "#1565C0", borderRadius: 2, display: "inline-block" }} />
+                        Razas identificadas por MobileNet
+                    </div>
+                    {resultados.map((r, i) => (
+                        <div key={r.key} style={{ marginBottom: i < resultados.length - 1 ? 14 : 0 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                    {i === 0 && (
+                                        <span style={{
+                                            fontSize: 9, fontWeight: 800, padding: "2px 7px",
+                                            borderRadius: 10, background: "#e3f2fd", color: "#0d3b7a",
+                                            border: "1px solid #90caf9",
+                                        }}>PRINCIPAL</span>
+                                    )}
+                                    <span style={{ fontSize: 13, fontWeight: i === 0 ? 800 : 600, color: i === 0 ? "#1565C0" : "#555" }}>
+                                        {r.nombre}
+                                    </span>
+                                </div>
+                                <span style={{
+                                    fontSize: 13, fontWeight: 800, color: colorTexto(r.pct),
+                                    background: r.pct >= 25 ? "#e3f2fd" : "#f5f5f5",
+                                    padding: "2px 8px", borderRadius: 10,
+                                }}>
+                                    {r.pct}%
+                                </span>
+                            </div>
+                            <div style={{ height: 7, background: "#eee", borderRadius: 4, overflow: "hidden" }}>
+                                <div style={{
+                                    height: "100%", width: `${r.pct}%`,
+                                    background: colorBarra(r.pct), borderRadius: 4,
+                                    transition: "width .7s cubic-bezier(.4,0,.2,1)",
+                                }} />
+                            </div>
+                            {i === 0 && r.pct >= 20 && (
+                                <button
+                                    type="button"
+                                    onClick={() => onRazaDetectada(r.nombre, null)}
+                                    style={{
+                                        marginTop: 6, padding: "5px 14px",
+                                        borderRadius: 10, border: "1.5px solid #1565C0",
+                                        background: "#e3f2fd", color: "#0d3b7a",
+                                        fontSize: 11, fontWeight: 800, cursor: "pointer",
+                                    }}>
+                                    ✓ Usar "{r.nombre}" como raza
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
 // Singleton: carga el modelo una sola vez en toda la sesión
 let _tmModelo = null
 async function cargarModeloTM() {
@@ -1382,7 +1657,7 @@ function ModalDetalle({ reporte, onCerrar, onEditar, onRestaurar, onVerMapa, sol
                         <Indicador30Dias diasActivo={reporte.diasActivo} />
                     )}
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+                    <div className="pf-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
                         <div>
                             <label style={S.label}>NOMBRE</label>
                             {editando
@@ -1568,9 +1843,16 @@ function FormPerdida({ onPublicar, onMostrarAlerta }) {
                         }}
                         modo="perdida"
                     />
+                    <DetectorMobileNet
+                        foto={fotos[0] || null}
+                        onRazaDetectada={(nombre) => {
+                            const match = RAZAS.find(r => r.toLowerCase().includes(nombre.toLowerCase().split("/")[0].trim()))
+                            if (match) setForm(prev => ({ ...prev, raza: match }))
+                        }}
+                    />
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+                <div className="pf-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
                     <div><label style={S.label}>NOMBRE</label><input name="nombre" value={form.nombre} onChange={handleChange} className="pf-input" style={S.input} required placeholder="Nombre de tu mascota" /></div>
                     <div>
                         <label style={S.label}>RAZA</label>
@@ -1595,7 +1877,7 @@ function FormPerdida({ onPublicar, onMostrarAlerta }) {
                     />
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 14 }}>
+                <div className="pf-form-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 14 }}>
                     <div>
                         <label style={S.label}>Fecha de pérdida</label>
                         <input type="date" name="fechaSeleccionada" value={form.fechaSeleccionada || ""} onChange={handleChange} className="pf-input" style={S.input} />
@@ -1692,9 +1974,16 @@ function FormPosiblePerdida({ onPublicar, onMostrarAlerta }) {
                         }}
                         modo="avistamiento"
                     />
+                    <DetectorMobileNet
+                        foto={fotos[0] || null}
+                        onRazaDetectada={(nombre) => {
+                            const match = RAZAS.find(r => r.toLowerCase().includes(nombre.toLowerCase().split("/")[0].trim()))
+                            if (match) setForm(prev => ({ ...prev, raza: match }))
+                        }}
+                    />
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+                <div className="pf-form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
                     <div>
                         <label style={S.label}>RAZA (si la conoces)</label>
                         <select name="raza" value={form.raza} onChange={handleChange} className="pf-input" style={S.input}>
@@ -2054,23 +2343,32 @@ export default function Reportes() {
         return () => unsub()
     }, [])
 
-// Carga scripts TensorFlow.js + Teachable Machine (lazy, una sola vez)
+// Carga scripts TensorFlow.js + Teachable Machine + MobileNet (lazy, una sola vez)
     useEffect(() => {
-        if (window.tmImage) return
         const cargar = async () => {
-            const s1 = document.createElement("script")
-            s1.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"
-            document.head.appendChild(s1)
-            await new Promise(res => { s1.onload = res; s1.onerror = res })
-            const s2 = document.createElement("script")
-            s2.src = "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"
-            document.head.appendChild(s2)
+            if (!window.tf) {
+                const s1 = document.createElement("script")
+                s1.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"
+                document.head.appendChild(s1)
+                await new Promise(res => { s1.onload = res; s1.onerror = res })
+            }
+            if (!window.tmImage) {
+                const s2 = document.createElement("script")
+                s2.src = "https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"
+                document.head.appendChild(s2)
+                await new Promise(res => { s2.onload = res; s2.onerror = res })
+            }
+            if (!window.mobilenet) {
+                const s3 = document.createElement("script")
+                s3.src = "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@latest/dist/mobilenet.min.js"
+                document.head.appendChild(s3)
+            }
         }
         cargar().catch(() => {})
     }, [])
 
     // Carga reportes desde la BD al montar
-    useEffect(() => {
+    const cargarReportes = () => {
         fetch(`${API}/api/reportes`)
             .then(r => r.ok ? r.json() : [])
             .then(data => {
@@ -2078,6 +2376,13 @@ export default function Reportes() {
                     setReportes(data.map(dbToFrontend))
             })
             .catch(() => { /* sin conexión: lista vacía */ })
+    }
+
+    useEffect(() => {
+        cargarReportes()
+        // Auto-refresh cada 60 segundos
+        const interval = setInterval(() => { cargarReportes() }, 60000)
+        return () => clearInterval(interval)
     }, [])
 
     const mostrarAlerta = (mensaje, tipo) => setAlerta({ mensaje, tipo })
@@ -2316,7 +2621,7 @@ export default function Reportes() {
     ]
 
     return (
-            <div className="pf-container" style={{ minHeight: "100vh", background: C.beigeLight, padding: "20px 16px", position: "relative", overflow: "hidden" }}>
+            <div className="pf-container" style={{ minHeight: "100vh", background: C.beigeLight, padding: "20px 16px", position: "relative" }}>
                 <style>{GLOBAL_CSS}</style>
 
                 {/* ── FONDO DECORATIVO ── */}
@@ -2372,67 +2677,68 @@ export default function Reportes() {
 
 
 
-                {/* TABS */}
-
-                <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-                    {TABS.filter(t => t.id !== "mascotasEncontradas").map(({ id, label, count }) => {
-                        const isActive = tab === id
-                        return (
-                            <button key={id} onClick={() => setTab(id)}
-                                style={{
-                                    padding: "10px 20px", borderRadius: 40, border: isActive ? "none" : `1.5px solid ${C.beige}`,
-                                    fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 14,
-                                    cursor: "pointer",
-                                    background: isActive ? `linear-gradient(135deg, ${C.orange}, #c96a1a)` : C.white,
-                                    color: isActive ? "white" : C.teal,
-                                    boxShadow: isActive ? "0 5px 18px rgba(224,123,39,0.35)" : "0 2px 8px rgba(0,0,0,0.06)",
-                                    display: "flex", alignItems: "center", gap: 8,
-                                    transition: "all 0.2s ease"
-                                }}>
-                                {id === "reportesGenerales" && "🐾"}
-                                {id === "posiblesPerdidas" && "🔍"}
-                                {id === "misReportes" && "📋"}
-                                {label}
-                                {count > 0 && (
-                                    <span style={{
-                                        background: isActive ? "rgba(255,255,255,0.25)" : C.orangeLight,
-                                        color: isActive ? "white" : C.orange,
-                                        padding: "2px 8px", borderRadius: 20, fontSize: 12, fontWeight: 800
-                                    }}>{count}</span>
-                                )}
-                            </button>
-                        )
-                    })}
-
-                    {/* Buscador */}
-                    <input type="text" placeholder="Buscar..."
+                {/* TABS — 2 filas en móvil */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+                    {/* Fila 1: botones de filtro */}
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {TABS.filter(t => t.id !== "mascotasEncontradas").map(({ id, label, count }) => {
+                            const isActive = tab === id
+                            return (
+                                <button key={id} onClick={() => setTab(id)}
+                                    style={{
+                                        padding: "9px 16px", borderRadius: 40,
+                                        border: isActive ? "none" : `1.5px solid ${C.beige}`,
+                                        fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 13,
+                                        cursor: "pointer",
+                                        background: isActive ? `linear-gradient(135deg, ${C.orange}, #c96a1a)` : C.white,
+                                        color: isActive ? "white" : C.teal,
+                                        boxShadow: isActive ? "0 5px 18px rgba(224,123,39,0.35)" : "0 2px 8px rgba(0,0,0,0.06)",
+                                        display: "flex", alignItems: "center", gap: 6,
+                                        transition: "all 0.2s ease", whiteSpace: "nowrap"
+                                    }}>
+                                    {id === "reportesGenerales" && "🐾"}
+                                    {id === "posiblesPerdidas" && "🔍"}
+                                    {id === "misReportes" && "📋"}
+                                    {label}
+                                    {count > 0 && (
+                                        <span style={{
+                                            background: isActive ? "rgba(255,255,255,0.25)" : C.orangeLight,
+                                            color: isActive ? "white" : C.orange,
+                                            padding: "2px 7px", borderRadius: 20, fontSize: 11, fontWeight: 800
+                                        }}>{count}</span>
+                                    )}
+                                </button>
+                            )
+                        })}
+                        {/* Encontradas */}
+                        <button onClick={() => setTab("mascotasEncontradas")}
+                            style={{
+                                padding: "9px 16px", borderRadius: 40,
+                                border: tab === "mascotasEncontradas" ? "none" : `1.5px solid ${C.beige}`,
+                                fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 13,
+                                cursor: "pointer",
+                                background: tab === "mascotasEncontradas" ? `linear-gradient(135deg, ${C.orange}, #c96a1a)` : C.white,
+                                color: tab === "mascotasEncontradas" ? "white" : C.teal,
+                                boxShadow: tab === "mascotasEncontradas" ? "0 5px 18px rgba(224,123,39,0.35)" : "0 2px 8px rgba(0,0,0,0.06)",
+                                display: "flex", alignItems: "center", gap: 6,
+                                transition: "all 0.2s ease", whiteSpace: "nowrap"
+                            }}>
+                            🏠 Encontradas
+                            {mascotasEncontradas.length > 0 && (
+                                <span style={{ background: "rgba(255,255,255,0.25)", color: "white", padding: "2px 7px", borderRadius: 20, fontSize: 11, fontWeight: 800 }}>
+                                    {mascotasEncontradas.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                    {/* Fila 2: buscador ancho completo */}
+                    <input type="text" placeholder="🔍 Buscar mascota, raza, lugar..."
                         style={{
-                            flex: 1, minWidth: 150, padding: "10px 16px", borderRadius: 40,
+                            width: "100%", padding: "11px 18px", borderRadius: 40,
                             border: `1.5px solid ${C.beige}`, fontSize: 14, outline: "none",
                             fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500,
-                            background: C.white, color: C.text
+                            background: C.white, color: C.text, boxSizing: "border-box"
                         }} />
-
-                    {/* Encontradas */}
-                    <button onClick={() => setTab("mascotasEncontradas")}
-                        style={{
-                            padding: "10px 20px", borderRadius: 40,
-                            border: tab === "mascotasEncontradas" ? "none" : `1.5px solid ${C.beige}`,
-                            fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 14,
-                            cursor: "pointer",
-                            background: tab === "mascotasEncontradas" ? `linear-gradient(135deg, ${C.orange}, #c96a1a)` : C.white,
-                            color: tab === "mascotasEncontradas" ? "white" : C.teal,
-                            boxShadow: tab === "mascotasEncontradas" ? "0 5px 18px rgba(224,123,39,0.35)" : "0 2px 8px rgba(0,0,0,0.06)",
-                            display: "flex", alignItems: "center", gap: 8,
-                            transition: "all 0.2s ease"
-                        }}>
-                        🏠 Encontradas
-                        {mascotasEncontradas.length > 0 && (
-                            <span style={{ background: "rgba(255,255,255,0.25)", color: "white", padding: "2px 8px", borderRadius: 20, fontSize: 12, fontWeight: 800 }}>
-                                {mascotasEncontradas.length}
-                            </span>
-                        )}
-                    </button>
                 </div>
 
 
@@ -2660,7 +2966,7 @@ export default function Reportes() {
                         {tab === "posiblesPerdidas" && (
                             <button onClick={handleNuevoReportePosible} className="pf-add-btn"
                                 style={{ width: "100%", padding: "14px 0", borderRadius: 14, background: `linear-gradient(135deg, ${C.orange}, #c96a1a)`, color: "white", border: "none", cursor: "pointer", fontWeight: 800, fontSize: 15, fontFamily: "'Plus Jakarta Sans',sans-serif", boxShadow: "0 8px 28px rgba(224,123,39,0.45)" }}>
-                                + Reportar un perro encontrado
+                                + Reportar un perro perdido
                             </button>
                         )}
                     </div>

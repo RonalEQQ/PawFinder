@@ -282,6 +282,11 @@ export default function Veterinarias() {
       `}</style>
       <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px]"></div>
       <div className="relative z-10 max-w-6xl mx-auto">
+        <style>{`
+          @media (max-width: 768px) {
+            .vet-map-box { height: 220px !important; }
+          }
+        `}</style>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Columna izquierda: mapa y filtros */}
           <div className="rounded-2xl p-4 shadow-md border" style={{ backgroundColor: paleta.tarjetaBlanca, borderColor: paleta.borde }}>

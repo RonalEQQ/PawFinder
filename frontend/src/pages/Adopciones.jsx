@@ -207,7 +207,17 @@ export default function Adopciones() {
         <div style={{ minHeight: '100vh', background: p.fondo, position: 'relative', paddingBottom: 80 }}>
       <style>{`
         @media (max-width: 900px) { .adopciones-grid { grid-template-columns: repeat(2,1fr) !important; } }
-        @media (max-width: 480px) { .adopciones-grid { grid-template-columns: 1fr !important; } }
+        @media (max-width: 480px) {
+            .adopciones-grid { grid-template-columns: 1fr !important; }
+            .adopciones-filtros { flex-direction: column !important; }
+            .adopciones-filtros input,
+            .adopciones-filtros select { width: 100% !important; }
+            .adopciones-modal { padding: 16px !important; }
+            .adopciones-form-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 768px) {
+            .adopciones-modal-inner { max-height: 88vh !important; overflow-y: auto !important; }
+        }
       `}</style>
             <FondoAnimado />
 
@@ -380,7 +390,7 @@ export default function Adopciones() {
                         {/* Info */}
                         <h2 style={{ fontWeight: 900, fontSize: 20, color: p.texto, marginBottom: 12 }}>{modalVer.especie} — {modalVer.raza}</h2>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+                        <div className='adopciones-form-grid' style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
                             <div style={{ background: '#f5f0e8', borderRadius: 10, padding: '8px 12px' }}>
                                 <div style={{ fontSize: 10, fontWeight: 800, color: p.primario }}>EDAD</div>
                                 <div style={{ fontSize: 13, color: p.texto, fontWeight: 700 }}>{modalVer.edad}</div>

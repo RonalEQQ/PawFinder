@@ -356,10 +356,18 @@ export default function Mapa() {
           .mapa-sidebar { max-height: 340px; overflow-y: auto; }
         }
       `}</style>
+      <style>{`
+        @media (max-width: 768px) {
+          .mapa-main-grid { grid-template-columns: 1fr !important; }
+          .mapa-sidebar { display: none; }
+          .mapa-sidebar.open { display: block !important; position: fixed; top: 60px; left: 0; right: 0; z-index: 1000; max-height: 60vh; overflow-y: auto; margin: 0; border-radius: 0 0 16px 16px; }
+          .mapa-container { height: calc(100vh - 130px) !important; }
+        }
+      `}</style>
       <div className="mapa-main-grid" style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gridTemplateColumns: "260px 1fr", gap: "14px" }}>
 
         {/* SIDEBAR — solo filtros */}
-        <div style={{ background: "#fff", borderRadius: "20px", padding: "16px", border: "1.5px solid #e8dfc8", alignSelf: "start" }}>
+        <div className="mapa-sidebar" style={{ background: "#fff", borderRadius: "20px", padding: "16px", border: "1.5px solid #e8dfc8", alignSelf: "start" }}>
           <p style={{ fontWeight: 900, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color: "#007A7B", marginBottom: "14px" }}>
             Filtros
           </p>

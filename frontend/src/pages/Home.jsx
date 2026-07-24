@@ -298,9 +298,16 @@ const EXTRA_CSS = `
 
   /* ── RESPONSIVE MÓVIL ── */
   @media (max-width: 768px) {
-    .pf-home-wrap { padding-bottom: 72px; }
+    .pf-home-wrap { padding-bottom: 80px !important; }
     .home-stories-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
     .home-stats-grid   { grid-template-columns: 1fr !important; gap: 12px !important; }
+    .home-hero-btns    { flex-direction: column !important; align-items: stretch !important; gap: 12px !important; }
+    .home-hero-btns button { width: 100% !important; padding: 14px 20px !important; font-size: 0.95rem !important; }
+    .home-hero-metrics { justify-content: center !important; gap: 16px !important; }
+    .home-carousel     { height: 260px !important; }
+  }
+  @media (max-width: 480px) {
+    .home-hero-metrics { flex-wrap: wrap !important; gap: 12px !important; }
   }
   @media (min-width: 769px) {
     .home-stories-grid { grid-template-columns: repeat(3, 1fr); }
@@ -659,7 +666,7 @@ export default function Home() {
             </p>
 
             {/* Botones — diseño según imagen de referencia */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+            <div className="home-hero-btns flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               {/* Botón naranja — Reportar Mascota */}
               <button onClick={() => navigate("/Reportes")}
                 className="group btn-orange flex items-center justify-center gap-3 font-black text-white relative overflow-hidden"
@@ -717,7 +724,7 @@ export default function Home() {
             </div>
 
             {/* Métricas fijas */}
-            <div className="mt-10 flex gap-8 justify-center md:justify-start flex-wrap">
+            <div className="home-hero-metrics mt-10 flex gap-8 justify-center md:justify-start flex-wrap">
               {[
                 { v:"24/7",  l:"Soporte"               },
                 { v:"100%",  l:"Gratuito"               },
