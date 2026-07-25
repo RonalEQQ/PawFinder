@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { auth } from '../firebase/firebaseConfig'
 import FondoAnimado from '../components/FondoAnimado'
 
-const API = import.meta.env.VITE_API_URL
+const API = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 
 export default function Campanas() {
     const paleta = {
@@ -54,7 +54,25 @@ export default function Campanas() {
             if (user) {
                 try {
                     const res = await fetch(API + '/api/auth/usuario/' + user.uid)
-                    if (res.ok) setUsuarioDb(await res.json())
+                    if (res.ok) {
+                        setUsuarioDb(await res.json())
+                    } else if (res.status === 404) {
+                        // Usuario no existe en BD — sincronizar
+                        const syncRes = await fetch(API + '/api/auth/sync', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                firebase_uid: user.uid,
+                                nombre: user.displayName || user.email?.split('@')[0],
+                                email: user.email,
+                                foto_url: user.photoURL || null
+                            })
+                        })
+                        if (syncRes.ok) {
+                            const data = await syncRes.json()
+                            setUsuarioDb(data.usuario)
+                        }
+                    }
                 } catch (e) { console.error(e) }
             }
         })
