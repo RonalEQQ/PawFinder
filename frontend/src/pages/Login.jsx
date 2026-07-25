@@ -838,7 +838,7 @@ export default function Login() {
                                     { icon: "🐾", titulo: "Reporta mascotas", desc: "Perdidas, encontradas o en avistamiento" },
                                     { icon: "🗺️", titulo: "Mapa de reportes", desc: "Ubica mascotas cerca de ti en Puno" },
                                     { icon: "💉", titulo: "Campañas de vacunación", desc: "Mantén a tu mascota protegida" },
-                                    { icon: "🏥", titulo: "Veterinarias cercanas", desc: "Encuentra clínicas y profesionales" },
+                                    { icon: "🐕", titulo: "Adopciones", desc: "Encuentra o publica mascotas en adopción" },
                                 ].map((f) => (
                                     <div key={f.titulo} style={{
                                         display: "flex", alignItems: "center", gap: 12,

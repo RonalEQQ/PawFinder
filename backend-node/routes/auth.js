@@ -178,7 +178,15 @@ router.delete('/usuario/:firebase_uid', async (req, res) => {
     )
     // Veterinarias propias
     await client.query('DELETE FROM veterinarias WHERE usuario_id = $1', [userId])
-    // Usuario
+    // Reportes propios (mascotas perdidas/encontradas) — reporte_fotos se
+    // borra solo por ON DELETE CASCADE
+    await client.query('DELETE FROM reportes WHERE firebase_uid = $1', [firebase_uid])
+    // Valoraciones/reseñas propias
+    await client.query('DELETE FROM valoraciones WHERE firebase_uid = $1', [firebase_uid])
+    // Publicaciones de adopción propias — adopcion_fotos se borra solo por
+    // ON DELETE CASCADE
+    await client.query('DELETE FROM adopciones WHERE usuario_id = $1', [userId])
+    // Usuario (las notificaciones propias se borran solas por ON DELETE CASCADE)
     await client.query('DELETE FROM usuarios WHERE firebase_uid = $1', [firebase_uid])
 
     await client.query('COMMIT')

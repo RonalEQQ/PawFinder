@@ -8,11 +8,43 @@ function getTransporter() {
   transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,  // contraseña de aplicación de 16 dígitos
+      // La contraseña de aplicación de Gmail a veces se pega con espacios
+      // (formato "abcd efgh ijkl mnop"). Los quitamos por si acaso, porque
+      // un EMAIL_PASS con espacios sin limpiar es una causa común de fallos
+      // silenciosos de autenticación en producción.
+      user: (process.env.EMAIL_USER || '').trim(),
+      pass: (process.env.EMAIL_PASS || '').replace(/\s+/g, ''),
     },
   })
   return transporter
+}
+
+// ── Diagnóstico: comprueba si el email está bien configurado ─────
+// Úsalo desde GET /api/email/verificar para saber en segundos si el
+// problema es "faltan variables de entorno" o "las credenciales están mal".
+async function verificarConexionEmail() {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    return {
+      ok: false,
+      motivo: 'EMAIL_USER y/o EMAIL_PASS no están definidos en las variables de entorno del servicio (Render → Environment).',
+    }
+  }
+  try {
+    await getTransporter().verify()
+    return {
+      ok: true,
+      motivo: `Conexión SMTP verificada correctamente con la cuenta ${process.env.EMAIL_USER}.`,
+    }
+  } catch (e) {
+    return {
+      ok: false,
+      motivo: `Falló la verificación SMTP: ${e.message}`,
+      codigo: e.code || null,
+      sugerencia: e.code === 'EAUTH'
+        ? 'Credenciales rechazadas por Gmail. Verifica que EMAIL_PASS sea una "Contraseña de aplicación" de 16 dígitos generada en https://myaccount.google.com/apppasswords (con verificación en 2 pasos activada), no la contraseña normal de la cuenta.'
+        : 'Revisa conectividad de red saliente en Render y que la cuenta de Gmail no tenga bloqueos de seguridad recientes.',
+    }
+  }
 }
 
 // ── Template HTML del email ──────────────────────────────────────
@@ -165,7 +197,7 @@ async function enviarEmailSimilitud({ emailDestinatario, nombreDueno,
     console.log(`✅ Email enviado a ${emailDestinatario} (similitud ${similitudPct}%)`)
     return true
   } catch (e) {
-    console.error(`❌ Error enviando email a ${emailDestinatario}:`, e.message)
+    console.error(`❌ Error enviando email a ${emailDestinatario} [${e.code || 'sin código'}]:`, e.message)
     return false
   }
 }
@@ -271,9 +303,9 @@ async function enviarEmailCampana({ emailDestinatario, nombreUsuario, nombreCamp
     console.log(`✅ Email campaña enviado a ${emailDestinatario}`)
     return true
   } catch (e) {
-    console.error(`❌ Error enviando email campaña a ${emailDestinatario}:`, e.message)
+    console.error(`❌ Error enviando email campaña a ${emailDestinatario} [${e.code || 'sin código'}]:`, e.message)
     return false
   }
 }
 
-module.exports = { enviarEmailSimilitud, enviarEmailCampana }
+module.exports = { enviarEmailSimilitud, enviarEmailCampana, verificarConexionEmail }

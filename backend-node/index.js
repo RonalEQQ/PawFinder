@@ -155,6 +155,21 @@ app.get('/', (req, res) => {
   res.json({ mensaje: 'PAW FINDER API funcionando', version: '2.0' })
 })
 
+// ── Diagnóstico de email ──
+// Verifica al arrancar (queda en los logs de Render) y expone un endpoint
+// GET /api/email/verificar para comprobarlo manualmente cuando quieras,
+// sin tener que crear una campaña de prueba cada vez.
+const { verificarConexionEmail } = require('./services/email')
+verificarConexionEmail().then(r => {
+  if (r.ok) console.log('✅ Email:', r.motivo)
+  else console.error('❌ Email mal configurado:', r.motivo, r.sugerencia || '')
+})
+
+app.get('/api/email/verificar', async (req, res) => {
+  const resultado = await verificarConexionEmail()
+  res.status(resultado.ok ? 200 : 500).json(resultado)
+})
+
 // ── Log del sistema (migrada del backend Python) ──
 app.post('/log', async (req, res) => {
   const { action, detail } = req.body

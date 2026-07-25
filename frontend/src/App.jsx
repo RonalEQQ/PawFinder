@@ -1081,12 +1081,22 @@ function MiCuenta() {
     }
     setGuardando(true)
     try {
-      await fetch(`${API}/api/auth/usuario/${usuario.uid}`, { method: "DELETE" })
+      const res = await fetch(`${API}/api/auth/usuario/${usuario.uid}`, { method: "DELETE" })
+      if (!res.ok) {
+        // No borramos la cuenta de Firebase si el backend falló: así los
+        // datos quedan intactos y el usuario puede reintentarlo.
+        mostrarMensaje("❌ No se pudo eliminar tu información. Intenta de nuevo en un momento.", "error")
+        return
+      }
       const { deleteUser } = await import("firebase/auth")
       await deleteUser(auth.currentUser)
       navigate("/login")
     } catch (e) {
-      mostrarMensaje("❌ Error al eliminar la cuenta. Si usas Google, vuelve a iniciar sesión primero.", "error")
+      if (e?.code === "auth/requires-recent-login") {
+        mostrarMensaje("⚠️ Por seguridad, vuelve a iniciar sesión y repite el proceso de eliminar cuenta.", "error")
+      } else {
+        mostrarMensaje("❌ Error al eliminar la cuenta. Si usas Google, vuelve a iniciar sesión primero.", "error")
+      }
     } finally { setGuardando(false) }
   }
 

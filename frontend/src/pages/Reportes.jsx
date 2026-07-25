@@ -1011,49 +1011,120 @@ async function cargarMobileNet() {
     return _mnModelo
 }
 
-// ── Componente: Detector MobileNet ───────────────────────────────────────
-function DetectorMobileNet({ foto, onRazaDetectada }) {
+// ── Paleta de referencia para detección de color por distancia euclidiana ──
+// Mismo principio que el reconocedor de color por píxeles: se compara cada
+// píxel de la foto contra estos colores de referencia y se queda con el
+// más cercano en el espacio RGB.
+const PALETA_COLORES_PERRO = [
+    { nombre: "Blanco", rgb: [235, 233, 225] },
+    { nombre: "Negro", rgb: [28, 26, 24] },
+    { nombre: "Gris", rgb: [128, 126, 122] },
+    { nombre: "Marrón", rgb: [90, 56, 34] },
+    { nombre: "Cafe", rgb: [143, 101, 62] },
+    { nombre: "Dorado", rgb: [206, 164, 82] },
+]
+
+function distanciaColorRGB(a, b) {
+    return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2)
+}
+
+function colorMasCercano(rgb) {
+    let mejor = PALETA_COLORES_PERRO[0]
+    let menorDist = Infinity
+    for (const c of PALETA_COLORES_PERRO) {
+        const d = distanciaColorRGB(rgb, c.rgb)
+        if (d < menorDist) { menorDist = d; mejor = c }
+    }
+    return mejor.nombre
+}
+
+// Analiza el color dominante de la foto, muestreando solo el 70% central
+// (para reducir el ruido de fondo/piso en los bordes de la imagen)
+async function analizarColorDominante(fotoUrl) {
+    const img = new Image()
+    img.crossOrigin = "anonymous"
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = fotoUrl })
+
+    const TAM = 80
+    const canvas = document.createElement("canvas")
+    canvas.width = TAM; canvas.height = TAM
+    const ctx = canvas.getContext("2d")
+    ctx.drawImage(img, 0, 0, TAM, TAM)
+    const { data } = ctx.getImageData(0, 0, TAM, TAM)
+
+    const margen = Math.round(TAM * 0.15)
+    const conteo = {}
+    let totalMuestras = 0
+    for (let y = margen; y < TAM - margen; y++) {
+        for (let x = margen; x < TAM - margen; x++) {
+            const i = (y * TAM + x) * 4
+            if (data[i + 3] < 100) continue // píxel transparente, se ignora
+            const nombre = colorMasCercano([data[i], data[i + 1], data[i + 2]])
+            conteo[nombre] = (conteo[nombre] || 0) + 1
+            totalMuestras++
+        }
+    }
+
+    return Object.entries(conteo)
+        .map(([nombre, n]) => ({ nombre, pct: Math.round((n / totalMuestras) * 100) }))
+        .sort((a, b) => b.pct - a.pct)
+}
+
+// Deriva la sugerencia final (color sólido, o Bicolor/Tricolor si hay
+// dos o tres colores claramente repartidos)
+function sugerenciaColor(orden) {
+    if (!orden.length) return null
+    if (orden[0].pct >= 60) return orden[0].nombre
+    if (orden.length >= 2 && orden[0].pct + orden[1].pct >= 65 && orden[1].pct >= 20) return "Bicolor"
+    if (orden.length >= 3 && orden[0].pct + orden[1].pct + orden[2].pct >= 70 && orden[2].pct >= 15) return "Tricolor"
+    return orden[0].nombre
+}
+
+// ── Componente: Detector de color con IA ─────────────────────────────────
+// MobileNet se usa internamente solo para confirmar en silencio que hay un
+// perro en la foto (sin mostrar una segunda sugerencia de raza duplicada
+// con DetectorRazaIA) — la función visible de esta tarjeta es el color.
+function DetectorMobileNet({ foto, onColorDetectado }) {
     const [estado, setEstado] = useState("idle")
     const [resultados, setResultados] = useState([])
+    const [sugerido, setSugerido] = useState(null)
+    const [avisoPerro, setAvisoPerro] = useState(false)
     const [msgError, setMsgError] = useState("")
 
-    useEffect(() => { setEstado("idle"); setResultados([]); setMsgError("") }, [foto])
+    useEffect(() => { setEstado("idle"); setResultados([]); setSugerido(null); setAvisoPerro(false); setMsgError("") }, [foto])
 
     const analizar = async () => {
         if (!foto) return
-        setEstado("cargando"); setResultados([]); setMsgError("")
+        setEstado("cargando"); setResultados([]); setMsgError(""); setAvisoPerro(false)
         try {
-            const modelo = await cargarMobileNet()
-            const img = new Image()
-            img.crossOrigin = "anonymous"
-            await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = foto })
-            const preds = await modelo.classify(img, 5)
-            // Filtrar solo razas de perros (clases que existen en MOBILENET_RAZAS o contienen palabras clave)
-            const perros = preds
-                .filter(p => {
-                    const cls = p.className.split(",")[0].trim()
-                    return MOBILENET_RAZAS[cls] || cls.toLowerCase().includes("dog") || cls.toLowerCase().includes("hound") || cls.toLowerCase().includes("terrier") || cls.toLowerCase().includes("retriever") || cls.toLowerCase().includes("spaniel") || cls.toLowerCase().includes("shepherd") || cls.toLowerCase().includes("bulldog") || cls.toLowerCase().includes("poodle") || cls.toLowerCase().includes("husky") || cls.toLowerCase().includes("collie")
+            // Validación silenciosa: ¿hay un perro en la foto? (no se muestra
+            // como resultado, solo se usa para advertir si no se detecta ninguno)
+            try {
+                const modelo = await cargarMobileNet()
+                const img = new Image()
+                img.crossOrigin = "anonymous"
+                await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = foto })
+                const preds = await modelo.classify(img, 5)
+                const hayPerro = preds.some(p => {
+                    const cls = p.className.split(",")[0].trim().toLowerCase()
+                    return MOBILENET_RAZAS[p.className.split(",")[0].trim()] || cls.includes("dog") || cls.includes("hound") || cls.includes("terrier") || cls.includes("retriever") || cls.includes("spaniel") || cls.includes("shepherd") || cls.includes("bulldog") || cls.includes("poodle") || cls.includes("husky") || cls.includes("collie")
                 })
-                .map(p => {
-                    const cls = p.className.split(",")[0].trim()
-                    return {
-                        key: cls,
-                        nombre: mnTraducir(cls),
-                        pct: Math.round(p.probability * 100)
-                    }
-                })
-                .slice(0, 4)
+                if (!hayPerro) setAvisoPerro(true)
+            } catch { /* si falla la validación, no bloquea el análisis de color */ }
 
-            if (perros.length === 0) {
-                setMsgError("No se detectó un perro claramente. Intenta con otra foto más nítida.")
+            const orden = await analizarColorDominante(foto)
+            if (orden.length === 0) {
+                setMsgError("No se pudo leer la imagen. Intenta con otra foto.")
                 setEstado("error")
                 return
             }
-            setResultados(perros)
+            setResultados(orden.slice(0, 4))
+            const mejor = sugerenciaColor(orden)
+            setSugerido(mejor)
             setEstado("listo")
-            if (perros[0].pct >= 20) onRazaDetectada(perros[0].nombre, perros[0].key)
+            if (mejor) onColorDetectado(mejor)
         } catch (e) {
-            console.error("MobileNet error:", e)
+            console.error("Detector de color error:", e)
             setMsgError("No se pudo analizar. Verifica la conexión.")
             setEstado("error")
         }
@@ -1087,14 +1158,14 @@ function DetectorMobileNet({ foto, onRazaDetectada }) {
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: 18,
                     }}>
-                        {estado === "cargando" ? "⏳" : estado === "listo" ? "🧠" : estado === "error" ? "⚠️" : "🔬"}
+                        {estado === "cargando" ? "⏳" : estado === "listo" ? "🎨" : estado === "error" ? "⚠️" : "🎨"}
                     </div>
                     <div>
                         <div style={{ fontWeight: 800, fontSize: 13, color: estado === "listo" ? "#0d3b7a" : "#311b92" }}>
-                            {estado === "listo" ? "Raza detectada — MobileNet" : estado === "cargando" ? "Analizando con MobileNet..." : "Análisis MobileNet (Google)"}
+                            {estado === "listo" ? "Color detectado por IA" : estado === "cargando" ? "Analizando color..." : "Detectar color con IA"}
                         </div>
                         <div style={{ fontSize: 11, color: "#6b6b6b", marginTop: 1 }}>
-                            Modelo de Google — 1000+ razas y objetos
+                            Analiza los píxeles de la foto para sugerir el color
                         </div>
                     </div>
                 </div>
@@ -1109,13 +1180,19 @@ function DetectorMobileNet({ foto, onRazaDetectada }) {
                         cursor: estado === "cargando" ? "not-allowed" : "pointer",
                         whiteSpace: "nowrap", flexShrink: 0, transition: "background .2s",
                     }}>
-                    {estado === "cargando" ? "Analizando..." : estado === "listo" ? "🔄 Reanálisis" : "🔬 Analizar"}
+                    {estado === "cargando" ? "Analizando..." : estado === "listo" ? "🔄 Reanálisis" : "🎨 Analizar"}
                 </button>
             </div>
 
             {estado === "error" && (
                 <div style={{ padding: "10px 16px", fontSize: 12, color: "#c62828", background: "#fff0f0", fontWeight: 600 }}>
                     ⚠️ {msgError}
+                </div>
+            )}
+
+            {avisoPerro && estado === "listo" && (
+                <div style={{ padding: "8px 16px", fontSize: 11, color: "#7a5c00", background: "#fff8e1", fontWeight: 600 }}>
+                    ⚠️ No se identificó claramente un perro en la foto — el color se analizó igual, revísalo antes de confirmar.
                 </div>
             )}
 
@@ -1127,10 +1204,10 @@ function DetectorMobileNet({ foto, onRazaDetectada }) {
                         marginBottom: 12, display: "flex", alignItems: "center", gap: 6,
                     }}>
                         <span style={{ width: 3, height: 14, background: "#1565C0", borderRadius: 2, display: "inline-block" }} />
-                        Razas identificadas por MobileNet
+                        Colores detectados en la foto
                     </div>
                     {resultados.map((r, i) => (
-                        <div key={r.key} style={{ marginBottom: i < resultados.length - 1 ? 14 : 0 }}>
+                        <div key={r.nombre} style={{ marginBottom: i < resultados.length - 1 ? 14 : 0 }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                     {i === 0 && (
@@ -1159,21 +1236,21 @@ function DetectorMobileNet({ foto, onRazaDetectada }) {
                                     transition: "width .7s cubic-bezier(.4,0,.2,1)",
                                 }} />
                             </div>
-                            {i === 0 && r.pct >= 20 && (
-                                <button
-                                    type="button"
-                                    onClick={() => onRazaDetectada(r.nombre, null)}
-                                    style={{
-                                        marginTop: 6, padding: "5px 14px",
-                                        borderRadius: 10, border: "1.5px solid #1565C0",
-                                        background: "#e3f2fd", color: "#0d3b7a",
-                                        fontSize: 11, fontWeight: 800, cursor: "pointer",
-                                    }}>
-                                    ✓ Usar "{r.nombre}" como raza
-                                </button>
-                            )}
                         </div>
                     ))}
+                    {sugerido && (
+                        <button
+                            type="button"
+                            onClick={() => onColorDetectado(sugerido)}
+                            style={{
+                                marginTop: 6, padding: "5px 14px",
+                                borderRadius: 10, border: "1.5px solid #1565C0",
+                                background: "#e3f2fd", color: "#0d3b7a",
+                                fontSize: 11, fontWeight: 800, cursor: "pointer",
+                            }}>
+                            ✓ Usar "{sugerido}" como color
+                        </button>
+                    )}
                 </div>
             )}
         </div>
@@ -1845,9 +1922,8 @@ function FormPerdida({ onPublicar, onMostrarAlerta }) {
                     />
                     <DetectorMobileNet
                         foto={fotos[0] || null}
-                        onRazaDetectada={(nombre) => {
-                            const match = RAZAS.find(r => r.toLowerCase().includes(nombre.toLowerCase().split("/")[0].trim()))
-                            if (match) setForm(prev => ({ ...prev, raza: match }))
+                        onColorDetectado={(color) => {
+                            if (COLORES_PERROS.includes(color)) setForm(prev => ({ ...prev, color }))
                         }}
                     />
                 </div>
@@ -1976,9 +2052,8 @@ function FormPosiblePerdida({ onPublicar, onMostrarAlerta }) {
                     />
                     <DetectorMobileNet
                         foto={fotos[0] || null}
-                        onRazaDetectada={(nombre) => {
-                            const match = RAZAS.find(r => r.toLowerCase().includes(nombre.toLowerCase().split("/")[0].trim()))
-                            if (match) setForm(prev => ({ ...prev, raza: match }))
+                        onColorDetectado={(color) => {
+                            if (COLORES_PERROS.includes(color)) setForm(prev => ({ ...prev, color }))
                         }}
                     />
                 </div>
