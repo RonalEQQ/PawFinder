@@ -219,7 +219,7 @@ router.post('/', async (req, res) => {
     await client.query('COMMIT')
   } catch (e) {
     await client.query('ROLLBACK')
-    console.error('Error creando reporte:', e.message)
+    console.error('Error creando reporte:', e.message, '| code:', e.code, '| detail:', e.detail, '| constraint:', e.constraint)
     return res.status(500).json({ error: 'No se pudo guardar el reporte. Intenta de nuevo.' })
   } finally {
     client.release()

@@ -81,7 +81,7 @@ router.post('/', async (req, res) => {
     res.status(201).json(adopcion)
   } catch (error) {
     await client.query('ROLLBACK')
-    console.error('Error creando adopcion:', error.message)
+    console.error('Error creando adopcion:', error.message, '| code:', error.code, '| detail:', error.detail, '| constraint:', error.constraint)
     res.status(500).json({ error: 'No se pudo guardar la publicación. Intenta de nuevo.' })
   } finally {
     client.release()
@@ -118,7 +118,7 @@ router.put('/:id', async (req, res) => {
     res.json({ ok: true })
   } catch (error) {
     await client.query('ROLLBACK')
-    console.error('Error editando adopcion:', error.message)
+    console.error('Error editando adopcion:', error.message, '| code:', error.code, '| detail:', error.detail, '| constraint:', error.constraint)
     res.status(500).json({ error: 'No se pudo guardar los cambios. Intenta de nuevo.' })
   } finally {
     client.release()
