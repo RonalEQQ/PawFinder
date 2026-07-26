@@ -53,25 +53,38 @@ router.post('/', async (req, res) => {
   if (!especie || !raza || !edad || !tamanio || !ciudad || !whatsapp) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' })
   }
+  const client = await pool.connect()
   try {
-    const resultado = await pool.query(
+    await client.query('BEGIN')
+    const resultado = await client.query(
       `INSERT INTO adopciones (usuario_id, especie, raza, edad, tamanio, machos, hembras, ciudad, whatsapp, salud, historia, urgente)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
       [usuario_id, especie, raza, edad, tamanio, machos || 0, hembras || 0, ciudad, whatsapp, salud || [], historia || null, urgente || false]
     )
     const adopcion = resultado.rows[0]
-    if (fotos && fotos.length > 0) {
-      for (let i = 0; i < fotos.length; i++) {
-        await pool.query(
-          'INSERT INTO adopcion_fotos (adopcion_id, url, orden) VALUES ($1,$2,$3)',
-          [adopcion.id, fotos[i], i]
-        )
-      }
+    if (Array.isArray(fotos) && fotos.length > 0) {
+      // Un solo INSERT con todas las filas, en vez de N queries secuenciales:
+      // menos viajes de ida y vuelta a Neon y, sobre todo, si algo falla no
+      // queda la publicación a medias (sin foto) como pasaba antes.
+      const valores = []
+      const placeholders = fotos.map((url, i) => {
+        const base = i * 3
+        valores.push(adopcion.id, url, i)
+        return `($${base + 1},$${base + 2},$${base + 3})`
+      }).join(',')
+      await client.query(
+        `INSERT INTO adopcion_fotos (adopcion_id, url, orden) VALUES ${placeholders}`,
+        valores
+      )
     }
+    await client.query('COMMIT')
     res.status(201).json(adopcion)
   } catch (error) {
+    await client.query('ROLLBACK')
     console.error('Error creando adopcion:', error.message)
-    res.status(500).json({ error: 'Error interno del servidor' })
+    res.status(500).json({ error: 'No se pudo guardar la publicación. Intenta de nuevo.' })
+  } finally {
+    client.release()
   }
 })
 
@@ -79,21 +92,36 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params
   const { especie, raza, edad, tamanio, machos, hembras, ciudad, whatsapp, salud, historia, urgente, estado, fotos } = req.body
+  const client = await pool.connect()
   try {
-    await pool.query(
+    await client.query('BEGIN')
+    await client.query(
       `UPDATE adopciones SET especie=$1, raza=$2, edad=$3, tamanio=$4, machos=$5, hembras=$6, ciudad=$7, whatsapp=$8, salud=$9, historia=$10, urgente=$11, estado=$12 WHERE id=$13`,
       [especie, raza, edad, tamanio, machos || 0, hembras || 0, ciudad, whatsapp, salud || [], historia || null, urgente || false, estado || 'disponible', id]
     )
     if (fotos !== undefined) {
-      await pool.query('DELETE FROM adopcion_fotos WHERE adopcion_id = $1', [id])
-      for (let i = 0; i < fotos.length; i++) {
-        await pool.query('INSERT INTO adopcion_fotos (adopcion_id, url, orden) VALUES ($1,$2,$3)', [id, fotos[i], i])
+      await client.query('DELETE FROM adopcion_fotos WHERE adopcion_id = $1', [id])
+      if (Array.isArray(fotos) && fotos.length > 0) {
+        const valores = []
+        const placeholders = fotos.map((url, i) => {
+          const base = i * 3
+          valores.push(id, url, i)
+          return `($${base + 1},$${base + 2},$${base + 3})`
+        }).join(',')
+        await client.query(
+          `INSERT INTO adopcion_fotos (adopcion_id, url, orden) VALUES ${placeholders}`,
+          valores
+        )
       }
     }
+    await client.query('COMMIT')
     res.json({ ok: true })
   } catch (error) {
+    await client.query('ROLLBACK')
     console.error('Error editando adopcion:', error.message)
-    res.status(500).json({ error: 'Error interno del servidor' })
+    res.status(500).json({ error: 'No se pudo guardar los cambios. Intenta de nuevo.' })
+  } finally {
+    client.release()
   }
 })
 

@@ -154,8 +154,11 @@ export default function Adopciones() {
             const method = editando ? 'PUT' : 'POST'
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
             if (res.ok) { await cargar(); setModalForm(false); resetForm(); setEditando(null) }
-            else alert('Error al guardar')
-        } catch { alert('Error al conectar') }
+            else {
+                const data = await res.json().catch(() => ({}))
+                alert(data.error || 'Error al guardar. Intenta de nuevo.')
+            }
+        } catch { alert('Error de conexión. Revisa tu internet e intenta de nuevo.') }
         finally { setGuardando(false) }
     }
 

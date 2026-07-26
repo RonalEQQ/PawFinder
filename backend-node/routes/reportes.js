@@ -168,8 +168,11 @@ router.post('/', async (req, res) => {
 
   if (!tipo) return res.status(400).json({ error: 'tipo es requerido' })
 
+  const client = await pool.connect()
+  let reporte
   try {
-    const result = await pool.query(
+    await client.query('BEGIN')
+    const result = await client.query(
       `INSERT INTO reportes
          (firebase_uid, usuario_nombre, nombre, raza, color, sexo,
           lugar, direccion_completa, lat, lng,
@@ -197,25 +200,42 @@ router.post('/', async (req, res) => {
         estado || 'activo',
       ]
     )
-    const reporte = result.rows[0]
+    reporte = result.rows[0]
 
     if (Array.isArray(fotos) && fotos.length > 0) {
-      for (let i = 0; i < fotos.length; i++) {
-        await pool.query(
-          'INSERT INTO reporte_fotos (reporte_id, url, orden) VALUES ($1,$2,$3)',
-          [reporte.id, fotos[i], i]
-        )
-      }
+      // Un solo INSERT con todas las filas: menos viajes a Neon y, si algo
+      // falla, el reporte no queda guardado a medias (sin fotos).
+      const valores = []
+      const placeholders = fotos.map((url, i) => {
+        const base = i * 3
+        valores.push(reporte.id, url, i)
+        return `($${base + 1},$${base + 2},$${base + 3})`
+      }).join(',')
+      await client.query(
+        `INSERT INTO reporte_fotos (reporte_id, url, orden) VALUES ${placeholders}`,
+        valores
+      )
     }
-
-    // ── Generar notificaciones de similitud ─────────────────
-    await generarNotificacionesSimilitud(pool, reporte)
-
-    res.status(201).json({ ok: true, reporte })
+    await client.query('COMMIT')
   } catch (e) {
+    await client.query('ROLLBACK')
     console.error('Error creando reporte:', e.message)
-    res.status(500).json({ error: 'Error interno' })
+    return res.status(500).json({ error: 'No se pudo guardar el reporte. Intenta de nuevo.' })
+  } finally {
+    client.release()
   }
+
+  try {
+    // ── Generar notificaciones de similitud ─────────────────
+    // Va después del COMMIT y fuera de la transacción a propósito: es un
+    // efecto secundario (notificaciones + email) y no debe poder revertir
+    // ni bloquear el reporte ya guardado con éxito.
+    await generarNotificacionesSimilitud(pool, reporte)
+  } catch (e) {
+    console.error('Error generando notificaciones de similitud:', e.message)
+  }
+
+  res.status(201).json({ ok: true, reporte })
 })
 
 // PUT /api/reportes/:id  — actualizar campos del reporte
